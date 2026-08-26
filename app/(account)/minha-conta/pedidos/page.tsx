@@ -56,7 +56,7 @@ export default function MeusPedidosPage() {
                                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(pedido.total)}
                             </span>
                             <Link
-                                href={`#`}
+                                href={"/minha-conta/pedidos/${pedido.id}"}
                                 className="inline-flex items-center text-sm font-medium text-[var(--accent)] hover:underline"
                             >
                                 Ver detalhes <ChevronRight className="ml-1 h-4 w-4" />
