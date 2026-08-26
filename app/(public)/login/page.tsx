@@ -54,7 +54,7 @@ export default function LoginPage() {
                             id="email"
                             type="email"
                             placeholder="seu@email.com"
-                            className="w-full rounded-[var(--radius)] border border-[var(--line)] bg-transparent px-3 py-2 text-sm transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                            className="w-full rounded-[var(--radius)] border border-solid border-[var(--muted)] bg-[var(--surface)] px-3 py-2 text-sm transition-colors hover:border-[var(--foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                             {...register("email")}
                         />
                         {errors.email && (
@@ -71,7 +71,7 @@ export default function LoginPage() {
                             id="password"
                             type="password"
                             placeholder="••••••••"
-                            className="w-full rounded-[var(--radius)] border border-[var(--line)] bg-transparent px-3 py-2 text-sm transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
+                            className="w-full rounded-[var(--radius)] border border-solid border-[var(--muted)] bg-[var(--surface)] px-3 py-2 text-sm transition-colors hover:border-[var(--foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                             {...register("password")}
                         />
                         {errors.password && (
