@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* SIDEBAR DESKTOP (Fixa na esquerda) */}
             <aside
-                className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col lg:border-r lg:border-[var(--line)] lg:bg-[var(--surface)] transition-all duration-300 ${isDesktopCollapsed ? "lg:w-20" : "lg:w-64"
+                className={`hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col lg:border-r lg:border-[var(--line)] lg:bg-[var(--surface)] lg:shadow-sm lg:z-20 transition-all duration-300 ${isDesktopCollapsed ? "lg:w-20" : "lg:w-64"
                     }`}
             >
                 <div className="flex h-16 shrink-0 items-center justify-between border-b border-[var(--line)] px-4">
@@ -62,8 +62,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                 href={link.href}
                                 title={isDesktopCollapsed ? link.label : ""} // Mostra o nome ao passar o mouse se estiver encolhido
                                 className={`flex items-center gap-3 rounded-[var(--radius)] px-3 py-2 text-sm font-medium transition-colors ${isActive
-                                        ? "bg-[var(--accent-soft)] text-[var(--accent)]"
-                                        : "text-[var(--muted)] hover:bg-[var(--line)] hover:text-[var(--foreground)]"
+                                    ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                                    : "text-[var(--muted)] hover:bg-[var(--line)] hover:text-[var(--foreground)]"
                                     }`}
                             >
                                 <link.icon className="h-5 w-5 shrink-0" />
@@ -114,8 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
 
             {/* ÁREA DE CONTEÚDO PRINCIPAL */}
-            <main className={`flex flex-1 flex-col transition-all duration-300 ${isDesktopCollapsed ? "lg:pl-20" : "lg:pl-64"}`}>
-                {/* TOPO DO ADMIN (Header) */}
+            <main className={`flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ${isDesktopCollapsed ? "lg:pl-20" : "lg:pl-64"}`}>                {/* TOPO DO ADMIN (Header) */}
                 <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-[var(--line)] bg-[var(--surface)] px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4 lg:hidden">
                         <button
@@ -138,7 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </header>
 
                 {/* O conteúdo das páginas admin será injetado aqui */}
-                <div className="flex-1 p-4 sm:p-6 lg:p-8">
+                <div className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 overflow-x-hidden">
                     {children}
                 </div>
             </main>
