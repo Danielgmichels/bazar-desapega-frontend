@@ -83,7 +83,7 @@ export default function LoginPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="mt-6 flex w-full items-center justify-center rounded-[var(--radius)] bg-[var(--accent)] px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-opacity-90 disabled:opacity-50"
+                        className="mt-8 flex w-full items-center justify-center rounded-[var(--radius)] bg-[var(--accent)] px-4 py-3 text-base font-medium text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70"
                     >
                         {isSubmitting ? "Entrando..." : "Entrar"}
                     </button>
