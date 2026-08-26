@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Search, Eye, Mail, MapPin, Phone } from "lucide-react";
 
 // Mock de clientes simulando o retorno da API
@@ -75,12 +76,13 @@ export default function AdminClientesPage() {
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
-                                    <button
+                                    <Link
+                                        href={`/admin/clientes/${cliente.id}`}
                                         className="inline-flex items-center justify-center rounded p-1.5 text-[var(--muted)] transition-colors hover:bg-[var(--line)] hover:text-[var(--foreground)]"
                                         title="Ver Histórico do Cliente"
                                     >
                                         <Eye className="h-4 w-4" />
-                                    </button>
+                                    </Link>
                                 </td>
                             </tr>
                         ))}
