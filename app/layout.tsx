@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers"; // <-- Importe o provedor aqui
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
     title: "Bazar Desapega",
-    description: "Uma experiência de brechó digital minimalista",
+    description: "Curadoria de peças únicas e sustentáveis",
 };
 
 export default function RootLayout({
@@ -16,7 +17,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="pt-BR">
-            <body className={inter.className}>{children}</body>
+            <body className={inter.className}>
+                {/* Envolva o children com o Providers */}
+                <Providers>
+                    {children}
+                </Providers>
+            </body>
         </html>
     );
 }
