@@ -1,18 +1,45 @@
-import Link from "next/link";
-import { Search, Eye, Mail, MapPin, Phone } from "lucide-react";
+"use client";
 
-// Mock de clientes simulando o retorno da API
-const mockClientes = [
-    { id: "C001", nome: "Maria Oliveira", email: "maria.oliveira@email.com", telefone: "(11) 99999-1111", cidade: "São Paulo - SP", dataCadastro: "15/08/2026", totalPedidos: 3 },
-    { id: "C002", nome: "João Silva", email: "joao.silva@email.com", telefone: "(21) 98888-2222", cidade: "Rio de Janeiro - RJ", dataCadastro: "20/08/2026", totalPedidos: 1 },
-    { id: "C003", nome: "Ana Costa", email: "ana.costa@email.com", telefone: "(41) 97777-3333", cidade: "Curitiba - PR", dataCadastro: "22/08/2026", totalPedidos: 5 },
-    { id: "C004", nome: "Carlos Souza", email: "carlos.souza@email.com", telefone: "(31) 96666-4444", cidade: "Belo Horizonte - MG", dataCadastro: "24/08/2026", totalPedidos: 0 },
-];
+import { useState } from "react";
+import Link from "next/link";
+import { useQuery } from "@tanstack/react-query";
+import { Search, Eye, Mail, MapPin, Phone, Loader2, Users } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
+
+interface ClienteItem {
+    id: number | string;
+    id_usuario: number | string;
+    nome: string;
+    email: string;
+    telefone?: string;
+    cidade?: string;
+    data_cadastro?: string;
+    total_pedidos: number;
+}
 
 export default function AdminClientesPage() {
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const { data: clientes = [], isLoading } = useQuery<ClienteItem[]>({
+        queryKey: ["admin-clientes"],
+        queryFn: async () => {
+            const res = await apiClient.get("/api/admin/clientes");
+            return Array.isArray(res.data) ? res.data : res.data?.data || [];
+        },
+    });
+
+    const filtered = clientes.filter((c) => {
+        const s = searchTerm.toLowerCase();
+        return (
+            !searchTerm ||
+            String(c.id).includes(s) ||
+            c.nome?.toLowerCase().includes(s) ||
+            c.email?.toLowerCase().includes(s)
+        );
+    });
+
     return (
         <div className="flex flex-col gap-6">
-
             {/* Cabeçalho */}
             <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
@@ -27,69 +54,94 @@ export default function AdminClientesPage() {
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--muted)]" />
                     <input
                         type="text"
-                        placeholder="Buscar cliente por nome ou e-mail..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Buscar cliente por nome, ID ou e-mail..."
                         className="w-full rounded-[var(--radius)] border border-solid border-[var(--muted)] bg-transparent py-2 pl-9 pr-4 text-sm transition-colors focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                     />
                 </div>
+                <span className="text-xs text-[var(--muted)]">
+                    {filtered.length} {filtered.length === 1 ? "cliente" : "clientes"}
+                </span>
             </div>
 
             {/* Tabela de Clientes */}
-            <div className="overflow-x-auto rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] shadow-sm">
-                <table className="w-full min-w-[900px] text-left text-sm">
-                    <thead className="border-b border-[var(--line)] bg-[var(--background)] text-[var(--muted)]">
-                        <tr>
-                            <th className="px-6 py-4 font-medium">Cliente</th>
-                            <th className="px-6 py-4 font-medium">Contato</th>
-                            <th className="px-6 py-4 font-medium">Localização</th>
-                            <th className="px-6 py-4 font-medium">Data de Cadastro</th>
-                            <th className="px-6 py-4 font-medium">Pedidos</th>
-                            <th className="px-6 py-4 font-medium text-right">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--line)]">
-                        {mockClientes.map((cliente) => (
-                            <tr key={cliente.id} className="transition-colors hover:bg-[var(--background)]">
-                                <td className="px-6 py-4">
-                                    <div className="font-medium text-[var(--foreground)]">{cliente.nome}</div>
-                                    <div className="text-xs text-[var(--muted)] mt-1">ID: {cliente.id}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="flex items-center gap-1.5 text-[var(--foreground)]">
-                                            <Mail className="h-3.5 w-3.5 text-[var(--muted)]" /> {cliente.email}
-                                        </span>
-                                        <span className="flex items-center gap-1.5 text-[var(--muted)]">
-                                            <Phone className="h-3.5 w-3.5" /> {cliente.telefone}
-                                        </span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span className="flex items-center gap-1.5 text-[var(--foreground)]">
-                                        <MapPin className="h-3.5 w-3.5 text-[var(--muted)]" /> {cliente.cidade}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-[var(--foreground)]">{cliente.dataCadastro}</td>
-                                <td className="px-6 py-4 text-[var(--foreground)]">
-                                    <span className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium ${cliente.totalPedidos > 0 ? "bg-green-100 text-green-800" : "bg-gray-100 text-[var(--muted)]"
-                                        }`}>
-                                        {cliente.totalPedidos} {cliente.totalPedidos === 1 ? 'pedido' : 'pedidos'}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <Link
-                                        href={`/admin/clientes/${cliente.id}`}
-                                        className="inline-flex items-center justify-center rounded p-1.5 text-[var(--muted)] transition-colors hover:bg-[var(--line)] hover:text-[var(--foreground)]"
-                                        title="Ver Histórico do Cliente"
-                                    >
-                                        <Eye className="h-4 w-4" />
-                                    </Link>
-                                </td>
+            {isLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-[var(--muted)] bg-[var(--surface)] rounded-[var(--radius)] border border-[var(--line)]">
+                    <Loader2 className="h-8 w-8 animate-spin mb-3 text-[var(--accent)]" />
+                    <p className="text-sm">Carregando clientes...</p>
+                </div>
+            ) : filtered.length > 0 ? (
+                <div className="overflow-x-auto rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] shadow-sm">
+                    <table className="w-full min-w-[850px] text-left text-sm">
+                        <thead className="border-b border-[var(--line)] bg-[var(--background)] text-[var(--muted)]">
+                            <tr>
+                                <th className="px-6 py-4 font-medium">Cliente</th>
+                                <th className="px-6 py-4 font-medium">Contato</th>
+                                <th className="px-6 py-4 font-medium">Localização</th>
+                                <th className="px-6 py-4 font-medium">Cadastro</th>
+                                <th className="px-6 py-4 font-medium">Pedidos</th>
+                                <th className="px-6 py-4 font-medium text-right">Ação</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
+                        </thead>
+                        <tbody className="divide-y divide-[var(--line)]">
+                            {filtered.map((cliente) => (
+                                <tr key={cliente.id} className="transition-colors hover:bg-[var(--background)]">
+                                    <td className="px-6 py-4">
+                                        <div className="font-medium text-[var(--foreground)]">{cliente.nome}</div>
+                                        <div className="text-xs text-[var(--muted)] mt-0.5 font-mono">ID: #{cliente.id}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="flex items-center gap-1.5 text-[var(--foreground)]">
+                                                <Mail className="h-3.5 w-3.5 text-[var(--muted)]" /> {cliente.email}
+                                            </span>
+                                            {cliente.telefone && (
+                                                <span className="flex items-center gap-1.5 text-[var(--muted)] text-xs">
+                                                    <Phone className="h-3.5 w-3.5" /> {cliente.telefone}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className="flex items-center gap-1.5 text-[var(--foreground)]">
+                                            <MapPin className="h-3.5 w-3.5 text-[var(--muted)]" />{" "}
+                                            {cliente.cidade || "Não informada"}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-[var(--muted)]">{cliente.data_cadastro || "-"}</td>
+                                    <td className="px-6 py-4 text-[var(--foreground)]">
+                                        <span
+                                            className={`inline-flex items-center justify-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                                cliente.total_pedidos > 0
+                                                    ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                                    : "bg-neutral-100 text-[var(--muted)]"
+                                            }`}
+                                        >
+                                            {cliente.total_pedidos || 0} {cliente.total_pedidos === 1 ? "pedido" : "pedidos"}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <Link
+                                            href={`/admin/clientes/${cliente.id}`}
+                                            className="inline-flex items-center justify-center rounded p-1.5 text-[var(--muted)] transition-colors hover:bg-[var(--line)] hover:text-[var(--foreground)]"
+                                            title="Ver Histórico do Cliente"
+                                        >
+                                            <Eye className="h-4 w-4" />
+                                        </Link>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            ) : (
+                <div className="flex flex-col items-center justify-center rounded-[var(--radius)] border border-dashed border-[var(--muted)] py-16 text-center bg-[var(--surface)]">
+                    <Users className="mb-2 h-10 w-10 text-[var(--muted)]" />
+                    <p className="font-medium text-[var(--foreground)]">Nenhum cliente encontrado</p>
+                    <p className="mt-1 text-sm text-[var(--muted)]">Os clientes cadastrados na vitrine aparecerão aqui.</p>
+                </div>
+            )}
         </div>
     );
 }

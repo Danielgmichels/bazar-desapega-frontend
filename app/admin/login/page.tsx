@@ -7,31 +7,34 @@ import { z } from "zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/providers/auth-provider";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, ShieldCheck } from "lucide-react";
 
-const loginSchema = z.object({
+const adminLoginSchema = z.object({
     email: z.string().min(1, "O e-mail é obrigatório").email("Digite um e-mail válido"),
     password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
 });
 
-type LoginForm = z.infer<typeof loginSchema>;
+type AdminLoginForm = z.infer<typeof adminLoginSchema>;
 
-function LoginFormContent() {
+function AdminLoginFormContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const redirectUrl = searchParams.get("redirect");
-    const { login } = useAuth();
-    const [apiError, setApiError] = useState<string | null>(null);
+    const urlError = searchParams.get("error");
+    const redirectUrl = searchParams.get("redirect") || "/admin";
+    const { login, logout } = useAuth();
+    const [apiError, setApiError] = useState<string | null>(
+        urlError === "unauthorized" ? "Sua conta não possui privilégios de administrador." : null
+    );
 
     const {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-    } = useForm<LoginForm>({
-        resolver: zodResolver(loginSchema),
+    } = useForm<AdminLoginForm>({
+        resolver: zodResolver(adminLoginSchema),
     });
 
-    const onSubmit = async (data: LoginForm) => {
+    const onSubmit = async (data: AdminLoginForm) => {
         setApiError(null);
         const result = await login(data);
 
@@ -48,22 +51,28 @@ function LoginFormContent() {
             )
         );
 
-        if (isUserAdmin) {
-            window.location.href = redirectUrl?.startsWith("/admin") && redirectUrl !== "/admin/login" ? redirectUrl : "/admin";
-        } else {
-            router.push(redirectUrl && !redirectUrl.startsWith("/admin") ? redirectUrl : "/");
+        if (!isUserAdmin) {
+            logout();
+            setApiError("Acesso não autorizado: esta conta não possui privilégios administrativos.");
+            return;
         }
 
+        const target = redirectUrl.startsWith("/admin") && redirectUrl !== "/admin/login" ? redirectUrl : "/admin";
+        window.location.href = target;
     };
+
 
     return (
         <div className="w-full max-w-sm rounded-[var(--radius)] bg-[var(--surface)] p-8 shadow-sm border border-[var(--line)]">
             <div className="mb-6 text-center">
+                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[var(--accent-soft)] text-[var(--accent)]">
+                    <ShieldCheck className="h-6 w-6" />
+                </div>
                 <h1 className="text-2xl font-medium tracking-tight text-[var(--foreground)]">
-                    Acesse sua conta
+                    Bazar Admin
                 </h1>
                 <p className="mt-2 text-sm text-[var(--muted)]">
-                    Entre para finalizar pedidos e gerenciar desapegos.
+                    Área restrita de gestão e controle operacional
                 </p>
             </div>
 
@@ -77,13 +86,13 @@ function LoginFormContent() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
                 <div className="space-y-1.5">
                     <label className="text-sm font-medium text-[var(--foreground)]" htmlFor="email">
-                        E-mail
+                        E-mail do Administrador
                     </label>
                     <input
                         id="email"
                         type="email"
                         autoComplete="email"
-                        placeholder="seu@email.com"
+                        placeholder="admin@bazardesapega.com.br"
                         className="w-full rounded-[var(--radius)] border border-solid border-[var(--muted)] bg-[var(--surface)] px-3 py-2 text-sm transition-colors hover:border-[var(--foreground)] focus:border-[var(--accent)] focus:outline-none focus:ring-1 focus:ring-[var(--accent)]"
                         {...register("email")}
                     />
@@ -117,33 +126,30 @@ function LoginFormContent() {
                     {isSubmitting ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Entrando...</span>
+                            <span>Validando credenciais...</span>
                         </>
                     ) : (
-                        "Entrar"
+                        "Acessar Painel"
                     )}
                 </button>
             </form>
 
             <div className="mt-6 text-center text-sm text-[var(--muted)]">
-                Não tem uma conta?{" "}
-                <Link
-                    href={redirectUrl ? `/cadastro?redirect=${encodeURIComponent(redirectUrl)}` : "/cadastro"}
-                    className="font-medium text-[var(--accent)] hover:underline"
-                >
-                    Cadastre-se
+                <Link href="/" className="font-medium hover:text-[var(--foreground)] hover:underline">
+                    ← Voltar para a vitrine
                 </Link>
             </div>
         </div>
     );
 }
 
-export default function LoginPage() {
+export default function AdminLoginPage() {
     return (
-        <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center px-4 py-12">
+        <main className="flex min-h-screen items-center justify-center bg-[var(--background)] px-4 py-12">
             <Suspense fallback={<div className="text-[var(--muted)]">Carregando...</div>}>
-                <LoginFormContent />
+                <AdminLoginFormContent />
             </Suspense>
         </main>
     );
 }
+

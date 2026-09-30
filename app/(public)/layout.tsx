@@ -1,4 +1,5 @@
 import { Header } from "@/components/ui/header";
+import { Footer } from "@/components/ui/footer";
 
 export default function PublicLayout({
     children,
@@ -9,9 +10,10 @@ export default function PublicLayout({
         <div className="flex min-h-screen flex-col">
             <Header />
             {/* O conteúdo das páginas (Home, Catálogo, Detalhe) entra aqui */}
-            <div className="flex-1">
+            <main className="flex-1">
                 {children}
-            </div>
+            </main>
+            <Footer />
         </div>
     );
 }
