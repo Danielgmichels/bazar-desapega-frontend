@@ -71,12 +71,15 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
     const galeriaFotos: string[] = [];
     if (produto.fotos && produto.fotos.length > 0) {
         produto.fotos.forEach((f) => {
-            if (f.caminho_arquivo) galeriaFotos.push(f.caminho_arquivo);
+            const url = f.caminho_arquivo || f.url_foto;
+            if (url && !galeriaFotos.includes(url)) galeriaFotos.push(url);
         });
-    } else if (produto.foto_principal) {
-        galeriaFotos.push(produto.foto_principal);
-    } else if (produto.foto) {
-        galeriaFotos.push(produto.foto);
+    }
+
+    // Se a foto principal não estiver na galeria, garante que ela é adicionada como a primeira foto
+    const fotoCapa = produto.foto_principal || produto.foto;
+    if (fotoCapa && !galeriaFotos.includes(fotoCapa)) {
+        galeriaFotos.unshift(fotoCapa);
     }
 
     const currentPhoto = galeriaFotos[selectedPhotoIndex] || galeriaFotos[0] || "";
