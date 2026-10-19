@@ -9,7 +9,6 @@ import {
     Package,
     ArrowRight,
     AlertCircle,
-    Plus,
     Loader2
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
@@ -95,24 +94,6 @@ export default function AdminDashboard() {
                     <p className="mt-1 text-sm text-[var(--muted)]">
                         Resumo operacional em tempo real do Bazar Desapega.
                     </p>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                    <Link
-                        href="/admin/pedidos/novo"
-                        className="inline-flex items-center gap-2 rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] px-4 py-2 text-sm font-medium text-[var(--foreground)] transition-colors hover:border-[var(--foreground)]"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Novo Pedido (Venda Direta)
-                    </Link>
-
-                    <Link
-                        href="/admin/produtos/novo"
-                        className="inline-flex items-center gap-2 rounded-[var(--radius)] bg-[var(--accent)] px-4 py-2 text-sm font-medium text-white transition-all hover:brightness-110"
-                    >
-                        <Plus className="h-4 w-4" />
-                        Cadastrar Peça
-                    </Link>
                 </div>
             </div>
 
