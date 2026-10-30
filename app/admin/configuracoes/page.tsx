@@ -18,16 +18,24 @@ import {
     Loader2,
     CheckCircle2,
     AlertCircle,
+    CheckSquare,
+    Square
 } from "lucide-react";
 import { apiClient, parseApiError } from "@/lib/api/client";
 
 type ConfigGroupKey = "tipos_entrega" | "tipos_produto" | "generos" | "status_pedidos";
 
+interface StatusPedidoItem {
+    id_status_pedido: number;
+    nome: string;
+    conta_faturamento?: boolean;
+}
+
 interface ConfigData {
     tipos_entrega: { id_tipo_entrega: number; nome: string }[];
     tipos_produto: { id_tipo: number; nome: string }[];
     generos: { id_genero: number; nome: string }[];
-    status_pedidos: { id_status_pedido: number; nome: string }[];
+    status_pedidos: StatusPedidoItem[];
 }
 
 export default function AdminConfiguracoesPage() {
@@ -40,10 +48,13 @@ export default function AdminConfiguracoesPage() {
         status_pedidos: "",
     });
 
+    const [newStatusFaturamento, setNewStatusFaturamento] = useState<boolean>(true);
+
     const [editingItem, setEditingItem] = useState<{
         grupo: ConfigGroupKey;
         id: number;
         nome: string;
+        conta_faturamento?: boolean;
     } | null>(null);
 
     const [busyAction, setBusyAction] = useState<string | null>(null);
@@ -65,8 +76,14 @@ export default function AdminConfiguracoesPage() {
         setBusyAction(`add-${grupo}`);
         setFeedback(null);
         try {
-            await apiClient.post(`/api/admin/configuracoes/${grupo}`, { nome });
+            const payload: any = { nome };
+            if (grupo === "status_pedidos") {
+                payload.conta_faturamento = newStatusFaturamento;
+            }
+
+            await apiClient.post(`/api/admin/configuracoes/${grupo}`, payload);
             setNewInputs((prev) => ({ ...prev, [grupo]: "" }));
+            setNewStatusFaturamento(true);
             await queryClient.invalidateQueries({ queryKey: ["admin-configuracoes"] });
             setFeedback({
                 type: "success",
@@ -86,11 +103,16 @@ export default function AdminConfiguracoesPage() {
     const handleSaveEdit = async () => {
         if (!editingItem || !editingItem.nome.trim()) return;
 
-        const { grupo, id, nome } = editingItem;
+        const { grupo, id, nome, conta_faturamento } = editingItem;
         setBusyAction(`edit-${grupo}-${id}`);
         setFeedback(null);
         try {
-            await apiClient.put(`/api/admin/configuracoes/${grupo}/${id}`, { nome: nome.trim() });
+            const payload: any = { nome: nome.trim() };
+            if (grupo === "status_pedidos") {
+                payload.conta_faturamento = conta_faturamento ?? true;
+            }
+
+            await apiClient.put(`/api/admin/configuracoes/${grupo}/${id}`, payload);
             setEditingItem(null);
             await queryClient.invalidateQueries({ queryKey: ["admin-configuracoes"] });
             setFeedback({
@@ -139,7 +161,7 @@ export default function AdminConfiguracoesPage() {
         title: string,
         subtitle: string,
         icon: React.ReactNode,
-        items: { id: number; nome: string }[],
+        items: { id: number; nome: string; conta_faturamento?: boolean }[],
         placeholder: string
     ) => (
         <div className="rounded-[var(--radius)] border border-[var(--line)] bg-[var(--surface)] p-6 shadow-xs space-y-4">
@@ -155,26 +177,40 @@ export default function AdminConfiguracoesPage() {
             </div>
 
             {/* Formulário para Adicionar Novo */}
-            <form onSubmit={(e) => handleAdd(grupo, e)} className="flex gap-2">
-                <input
-                    type="text"
-                    placeholder={placeholder}
-                    value={newInputs[grupo]}
-                    onChange={(e) => setNewInputs((prev) => ({ ...prev, [grupo]: e.target.value }))}
-                    className={inputClass}
-                />
-                <button
-                    type="submit"
-                    disabled={busyAction === `add-${grupo}` || !newInputs[grupo]?.trim()}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius)] bg-[var(--accent)] px-4 py-2 text-xs font-medium text-white transition-all hover:brightness-110 disabled:opacity-50"
-                >
-                    {busyAction === `add-${grupo}` ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                        <Plus className="h-4 w-4" />
-                    )}
-                    Adicionar
-                </button>
+            <form onSubmit={(e) => handleAdd(grupo, e)} className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        placeholder={placeholder}
+                        value={newInputs[grupo]}
+                        onChange={(e) => setNewInputs((prev) => ({ ...prev, [grupo]: e.target.value }))}
+                        className={inputClass}
+                    />
+                    <button
+                        type="submit"
+                        disabled={busyAction === `add-${grupo}` || !newInputs[grupo]?.trim()}
+                        className="inline-flex shrink-0 items-center gap-1.5 rounded-[var(--radius)] bg-[var(--accent)] px-4 py-2 text-xs font-medium text-white transition-all hover:brightness-110 disabled:opacity-50"
+                    >
+                        {busyAction === `add-${grupo}` ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                            <Plus className="h-4 w-4" />
+                        )}
+                        Adicionar
+                    </button>
+                </div>
+
+                {grupo === "status_pedidos" && (
+                    <label className="flex items-center gap-2 text-xs text-[var(--muted)] hover:text-[var(--foreground)] cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={newStatusFaturamento}
+                            onChange={(e) => setNewStatusFaturamento(e.target.checked)}
+                            className="rounded border-[var(--muted)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                        />
+                        <span>Conta como Faturamento Confirmado no Dashboard/Fechamento</span>
+                    </label>
+                )}
             </form>
 
             {/* Lista de Itens com Edição e Exclusão */}
@@ -188,7 +224,7 @@ export default function AdminConfiguracoesPage() {
                         return (
                             <div
                                 key={item.id}
-                                className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm"
+                                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-4 py-2.5 text-sm"
                             >
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
                                     <span className="font-mono text-xs font-semibold text-[var(--muted)] shrink-0">
@@ -196,25 +232,57 @@ export default function AdminConfiguracoesPage() {
                                     </span>
 
                                     {isEditing ? (
-                                        <input
-                                            type="text"
-                                            value={editingItem.nome}
-                                            onChange={(e) =>
-                                                setEditingItem((prev) =>
-                                                    prev ? { ...prev, nome: e.target.value } : null
-                                                )
-                                            }
-                                            className="flex-1 rounded border border-[var(--accent)] bg-[var(--surface)] px-2.5 py-1 text-sm text-[var(--foreground)] focus:outline-none"
-                                            autoFocus
-                                        />
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
+                                            <input
+                                                type="text"
+                                                value={editingItem.nome}
+                                                onChange={(e) =>
+                                                    setEditingItem((prev) =>
+                                                        prev ? { ...prev, nome: e.target.value } : null
+                                                    )
+                                                }
+                                                className="flex-1 rounded border border-[var(--accent)] bg-[var(--surface)] px-2.5 py-1 text-sm text-[var(--foreground)] focus:outline-none"
+                                                autoFocus
+                                            />
+                                            {grupo === "status_pedidos" && (
+                                                <label className="flex items-center gap-1.5 text-xs text-[var(--muted)] cursor-pointer shrink-0">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={editingItem.conta_faturamento ?? true}
+                                                        onChange={(e) =>
+                                                            setEditingItem((prev) =>
+                                                                prev
+                                                                    ? { ...prev, conta_faturamento: e.target.checked }
+                                                                    : null
+                                                            )
+                                                        }
+                                                        className="rounded border-[var(--muted)] text-[var(--accent)] focus:ring-[var(--accent)]"
+                                                    />
+                                                    Conta faturamento
+                                                </label>
+                                            )}
+                                        </div>
                                     ) : (
-                                        <span className="font-medium text-[var(--foreground)] truncate">
-                                            {item.nome}
-                                        </span>
+                                        <div className="flex items-center gap-2 truncate">
+                                            <span className="font-medium text-[var(--foreground)] truncate">
+                                                {item.nome}
+                                            </span>
+                                            {grupo === "status_pedidos" && (
+                                                <span
+                                                    className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border ${
+                                                        item.conta_faturamento
+                                                            ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                                                            : "bg-zinc-100 border-zinc-200 text-zinc-600"
+                                                    }`}
+                                                >
+                                                    {item.conta_faturamento ? "Conta no faturamento" : "Não soma"}
+                                                </span>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-1 shrink-0">
+                                <div className="flex items-center gap-1 shrink-0 self-end sm:self-center">
                                     {isEditing ? (
                                         <>
                                             <button
@@ -248,10 +316,11 @@ export default function AdminConfiguracoesPage() {
                                                         grupo,
                                                         id: item.id,
                                                         nome: item.nome,
+                                                        conta_faturamento: item.conta_faturamento ?? true,
                                                     })
                                                 }
                                                 className="rounded p-1.5 text-[var(--muted)] hover:bg-[var(--line)] hover:text-[var(--foreground)]"
-                                                title="Editar nome"
+                                                title="Editar"
                                             >
                                                 <Pencil className="h-3.5 w-3.5" />
                                             </button>
@@ -351,7 +420,11 @@ export default function AdminConfiguracoesPage() {
                         "Status de Pedidos",
                         "Etapas do fluxo de pagamento, separação e entrega",
                         <Layers className="h-4 w-4 text-[var(--accent)]" />,
-                        (data?.status_pedidos || []).map((s) => ({ id: s.id_status_pedido, nome: s.nome })),
+                        (data?.status_pedidos || []).map((s) => ({
+                            id: s.id_status_pedido,
+                            nome: s.nome,
+                            conta_faturamento: s.conta_faturamento,
+                        })),
                         "Ex: Pronto para Retirada, Aguardando Motoboy..."
                     )}
 
@@ -368,4 +441,3 @@ export default function AdminConfiguracoesPage() {
         </div>
     );
 }
-
