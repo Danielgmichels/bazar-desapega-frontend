@@ -14,12 +14,14 @@ import {
     X,
     UserCircle,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    CircleDollarSign
 } from "lucide-react";
 
-// Lista de rotas administrativas exigidas pela especificação
+// Lista de rotas administrativas
 const adminLinks = [
     { href: "/admin", label: "Visão Geral", icon: LayoutDashboard },
+    { href: "/admin/financeiro", label: "Financeiro & Fechamento", icon: CircleDollarSign },
     { href: "/admin/produtos", label: "Produtos", icon: Tags },
     { href: "/admin/pedidos", label: "Pedidos", icon: ShoppingBag },
     { href: "/admin/clientes", label: "Clientes", icon: Users },
@@ -29,8 +31,8 @@ const adminLinks = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false); // <-- NOVO ESTADO
-    const pathname = usePathname(); // Ajuda a saber qual tela está ativa para pintar o botão
+    const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+    const pathname = usePathname();
 
     return (
         <div className="min-h-screen bg-[var(--background)] flex">
@@ -62,7 +64,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                title={isDesktopCollapsed ? link.label : ""} // Mostra o nome ao passar o mouse se estiver encolhido
+                                title={isDesktopCollapsed ? link.label : ""}
                                 className={`flex items-center gap-3 rounded-[var(--radius)] px-3 py-2 text-sm font-medium transition-colors ${isActive
                                     ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                                     : "text-[var(--muted)] hover:bg-[var(--line)] hover:text-[var(--foreground)]"
@@ -101,7 +103,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                     <Link
                                         key={link.href}
                                         href={link.href}
-                                        onClick={() => setIsMobileMenuOpen(false)} // Fecha o menu ao clicar
+                                        onClick={() => setIsMobileMenuOpen(false)}
                                         className={`flex items-center gap-3 rounded-[var(--radius)] px-3 py-2 text-sm font-medium transition-colors ${isActive
                                             ? "bg-[var(--accent-soft)] text-[var(--accent)]"
                                             : "text-[var(--muted)] hover:bg-[var(--line)] hover:text-[var(--foreground)]"
@@ -118,7 +120,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             )}
 
             {/* ÁREA DE CONTEÚDO PRINCIPAL */}
-            <main className={`flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ${isDesktopCollapsed ? "lg:pl-20" : "lg:pl-64"}`}>                {/* TOPO DO ADMIN (Header) */}
+            <main className={`flex flex-1 flex-col min-w-0 w-full transition-all duration-300 ${isDesktopCollapsed ? "lg:pl-20" : "lg:pl-64"}`}>
+                {/* TOPO DO ADMIN (Header) */}
                 <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-[var(--line)] bg-[var(--surface)] px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-4 lg:hidden">
                         <button
@@ -130,7 +133,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
 
                     <div className="flex flex-1 justify-end items-center gap-4">
-                        {/* Atalho rápido e Perfil (conforme especificação) */}
                         <Link href="/" target="_blank" className="text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] transition-colors hidden sm:block">
                             Ver vitrine
                         </Link>
