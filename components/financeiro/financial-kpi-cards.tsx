@@ -133,3 +133,4 @@ export function FinancialKpiCards({ kpis, isLoading }: FinancialKpiCardsProps) {
         </div>
     );
 }
+

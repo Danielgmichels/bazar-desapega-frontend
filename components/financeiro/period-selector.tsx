@@ -141,3 +141,4 @@ export function PeriodSelector({ mes, ano, onChangePeriod }: PeriodSelectorProps
         </div>
     );
 }
+

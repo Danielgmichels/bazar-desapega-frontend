@@ -113,3 +113,4 @@ export interface FechamentoResponse {
     };
     itens: ItemFechamento[];
 }
+
